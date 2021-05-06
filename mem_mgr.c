@@ -63,7 +63,7 @@ int tlb_contains(unsigned x) {  // TODO:
 void update_tlb(unsigned page) {  // TODO:
     tlb[current_tlb_entry][0] = page;
     tlb[current_tlb_entry][1] = page_table[page];
-    current_tlb_entry = (current_tlb_entry + 1) % 16;
+    current_tlb_entry = (current_tlb_entry + 1) % 16; // current entry updated
     //round robin 
 }
 
@@ -73,7 +73,7 @@ unsigned getframe(FILE* fstore, unsigned logic_add, unsigned page,
     int tlb_index = tlb_contains(page);
     if(tlb_index != -1)
     {
-        (*tlb_hit_count)++;
+        (*tlb_hit_count)++; // hit rate increases with list
         return tlb[tlb_index][1];
     }
   
@@ -82,7 +82,7 @@ unsigned getframe(FILE* fstore, unsigned logic_add, unsigned page,
   // if page table hit
   if (page_table[page] != -1)
   {
-      update_tlb(page);
+      update_tlb(page);   //updates tlb
       return page_table[page];
   }
 
@@ -97,17 +97,19 @@ unsigned getframe(FILE* fstore, unsigned logic_add, unsigned page,
     page_table[page] = current_frame;
     current_frame = (current_frame + 1) % 256;
     (*page_fault_count)++;
-    fread(&main_mem[page_table[page]*FRAME_SIZE], sizeof(char), 256, fstore);
+
+    fread(&main_mem[page_table[page] * FRAME_SIZE], sizeof(char), 256, fstore);
+
     update_tlb(page);
-    return page_table[page];
+    return page_table[page];    //returns update
 }
 
 int get_available_frame(unsigned page) {    // TODO
   // empty queue
   if (qhead == 0 && qtail == 0 && page_queue[qhead] == -1)
   {
-    ++qtail;
-    page_queue[qhead]=page;
+    qtail++;
+    page_queue[qhead] = page;
     return qhead;
   }
   
@@ -115,9 +117,9 @@ int get_available_frame(unsigned page) {    // TODO
   if (page_queue[qtail] == -1)
   {
     page_queue[qtail]=page;
-    int val = qtail;
+    int value = qtail;
     qtail = (qtail + 1) % 128;
-    return val;
+    return value;
   }
   
   
@@ -125,13 +127,11 @@ int get_available_frame(unsigned page) {    // TODO
  if (qhead == qtail && page_queue[qtail] != -1)
  {
     page_queue[qhead] = page;
-    int val = qhead;
+    int value = qhead;
     qhead = (qhead+1) % 128;
     qtail = (qtail+1) % 128;
-    return val;
-  }
-
-
+    return value;
+ }
   return -1;   // failed to find a value
 }
 
@@ -168,8 +168,10 @@ unsigned getframe_fifo(FILE* fstore, unsigned logic_add, unsigned page,
   // bring data into memory, update tlb and page table
   int available_frame = get_available_frame(page);
   fread(&main_mem_fifo[available_frame * FRAME_SIZE], sizeof(char), 256, fstore);
+
   page_table[page] = available_frame;
   (*page_fault_count)++;
+
   update_tlb(page);
   return page_table[page];
 }
