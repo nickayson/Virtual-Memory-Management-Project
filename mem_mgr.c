@@ -89,7 +89,7 @@ unsigned getframe(FILE* fstore, unsigned logic_add, unsigned page,
   
   // page table miss -> page fault
   // find page location in backing_store
-    int offset = (logic_add / FRAME_SIZE) * FRAME_SIZE;
+    int offset = (logic_add / FRAMES_PART1) * FRAMES_PART1;
     fseek(fstore, offset, 0);
   
   
@@ -98,7 +98,7 @@ unsigned getframe(FILE* fstore, unsigned logic_add, unsigned page,
     current_frame = (current_frame + 1) % 256;
     (*page_fault_count)++;
 
-    fread(&main_mem[page_table[page] * FRAME_SIZE], sizeof(char), 256, fstore);
+    fread(&main_mem[page_table[page] * FRAMES_PART1], sizeof(char), 256, fstore);
 
     update_tlb(page);
     return page_table[page];    //returns update
@@ -117,9 +117,9 @@ int get_available_frame(unsigned page) {    // TODO
   if (page_queue[qtail] == -1)
   {
     page_queue[qtail]=page;
-    int value = qtail;
+    int val = qtail;
     qtail = (qtail + 1) % 128;
-    return value;
+    return val;
   }
   
   
@@ -127,10 +127,10 @@ int get_available_frame(unsigned page) {    // TODO
  if (qhead == qtail && page_queue[qtail] != -1)
  {
     page_queue[qhead] = page;
-    int value = qhead;
+    int val = qhead;
     qhead = (qhead+1) % 128;
     qtail = (qtail+1) % 128;
-    return value;
+    return val;
  }
   return -1;   // failed to find a value
 }
