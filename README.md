@@ -8,3 +8,5 @@ Cntrl Shift B
 
 run: 
 ./mem_mgr
+
+The requirements for this project are contained in the pdf file above which lists all requirements
